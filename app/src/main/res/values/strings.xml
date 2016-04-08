@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">MagicMirror</string>
+
+    <!-- Strings related to login -->
+    <string name="facebook_app_id">1070022909703270</string>
+    <string name="title_activity_main">MainActivity</string>
+</resources>
