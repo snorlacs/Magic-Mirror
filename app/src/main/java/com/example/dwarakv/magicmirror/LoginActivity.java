@@ -1,10 +1,17 @@
 package com.example.dwarakv.magicmirror;
 
+import net.hockeyapp.android.CrashManager;
+import net.hockeyapp.android.UpdateManager;
+
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 import com.facebook.AccessToken;
 import com.facebook.AccessTokenTracker;
@@ -21,14 +28,19 @@ public class LoginActivity extends AppCompatActivity {
     private CallbackManager callbackManager;
     private AccessTokenTracker accessTokenTracker;
     private ProfileTracker profileTracker;
+    private LinearLayout profileContent;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         accessTokenTracker = new AccessTokenTracker() {
             @Override
             protected void onCurrentAccessTokenChanged(AccessToken oldAccessToken, AccessToken currentAccessToken) {
+                if(currentAccessToken==null) {
+                    profileContent.setVisibility(View.INVISIBLE);
+                }
             }
         };
 
@@ -42,14 +54,17 @@ public class LoginActivity extends AppCompatActivity {
         accessTokenTracker.startTracking();
         profileTracker.startTracking();
         loginWithFacebook();
+        checkForUpdates();
     }
 
     private void nextActivity(Profile profile) {
+
         if(profile!=null) {
-            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-            intent.putExtra("name", profile.getFirstName());
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
+            profileContent = (LinearLayout) findViewById(R.id.profile_content);
+            TextView greetings = (TextView) findViewById(R.id.greet);
+            greetings.setText("Hello " + profile.getFirstName());
+            new DownloadImage((ImageView) findViewById(R.id.profile_image)).execute(profile.getProfilePictureUri(200, 200).toString());
+            profileContent.setVisibility(View.VISIBLE);
         }
     }
 
@@ -105,19 +120,38 @@ public class LoginActivity extends AppCompatActivity {
         super.onResume();
         Profile profile = Profile.getCurrentProfile();
         nextActivity(profile);
+        checkForCrashes();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        unregisterManagers();
     }
 
     protected void onStop() {
         super.onStop();
         accessTokenTracker.stopTracking();
         profileTracker.stopTracking();
+
+    }
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        unregisterManagers();
     }
 
+    private void checkForCrashes() {
+        CrashManager.register(this);
+    }
+
+    private void checkForUpdates() {
+        UpdateManager.register(this);
+    }
+
+    private void unregisterManagers() {
+        UpdateManager.unregister();
+    }
 
 
 }
