@@ -1,10 +1,9 @@
-package com.example.dwarakv.magicmirror;
+package com.digitalmirror.magicmirror;
 
 import android.app.Application;
 
 import com.facebook.FacebookSdk;
 import com.facebook.LoggingBehavior;
-import com.facebook.login.LoginManager;
 
 public class MagicMirrorApplication extends Application {
 

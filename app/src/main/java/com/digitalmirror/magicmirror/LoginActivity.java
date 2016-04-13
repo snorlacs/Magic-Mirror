@@ -1,10 +1,5 @@
-package com.example.dwarakv.magicmirror;
+package com.digitalmirror.magicmirror;
 
-import net.hockeyapp.android.CrashManager;
-import net.hockeyapp.android.UpdateManager;
-
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -16,6 +11,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.digitalmirror.magicmirror.magicmirror.BuildConfig;
+import com.digitalmirror.magicmirror.magicmirror.R;
 import com.facebook.AccessToken;
 import com.facebook.AccessTokenTracker;
 import com.facebook.CallbackManager;
@@ -28,13 +25,14 @@ import com.facebook.ProfileTracker;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 
+import net.hockeyapp.android.CrashManager;
+import net.hockeyapp.android.UpdateManager;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 public class LoginActivity extends AppCompatActivity {
 
-    public static final String EXTRA_FIRST_NAME = BuildConfig.APPLICATION_ID + ".FIRST_NAME";
-    public static final String EXTRA_GENDER = BuildConfig.APPLICATION_ID + ".GENDER";
     private CallbackManager callbackManager;
     private AccessTokenTracker accessTokenTracker;
     private ProfileTracker profileTracker;

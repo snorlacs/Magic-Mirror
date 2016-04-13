@@ -1,4 +1,4 @@
-package com.example.dwarakv.magicmirror;
+package com.digitalmirror.magicmirror.magicmirror;
 
 import org.junit.Test;
 

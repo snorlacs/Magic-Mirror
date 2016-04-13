@@ -1,4 +1,4 @@
-package com.example.dwarakv.magicmirror;
+package com.digitalmirror.magicmirror;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;
