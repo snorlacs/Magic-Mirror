@@ -2,7 +2,6 @@ package com.digitalmirror.magicmirror;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -12,8 +11,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.digitalmirror.magicmirror.model.User;
-import com.digitalmirror.magicmirror.services.UserService;
 import com.facebook.AccessToken;
 import com.facebook.AccessTokenTracker;
 import com.facebook.CallbackManager;
@@ -29,17 +26,12 @@ import com.facebook.login.widget.LoginButton;
 import net.hockeyapp.android.CrashManager;
 import net.hockeyapp.android.UpdateManager;
 
+import org.altbeacon.beacon.Identifier;
+import org.altbeacon.beacon.Region;
 import org.altbeacon.beacon.startup.BootstrapNotifier;
 import org.altbeacon.beacon.startup.RegionBootstrap;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import org.altbeacon.beacon.Identifier;
-import org.altbeacon.beacon.Region;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class LoginActivity extends AppCompatActivity implements BootstrapNotifier{
 
