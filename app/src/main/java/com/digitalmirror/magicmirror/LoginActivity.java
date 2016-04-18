@@ -2,6 +2,7 @@ package com.digitalmirror.magicmirror;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -11,8 +12,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.digitalmirror.magicmirror.magicmirror.BuildConfig;
-import com.digitalmirror.magicmirror.magicmirror.R;
+import com.digitalmirror.magicmirror.model.User;
+import com.digitalmirror.magicmirror.services.UserService;
 import com.facebook.AccessToken;
 import com.facebook.AccessTokenTracker;
 import com.facebook.CallbackManager;
@@ -35,8 +36,10 @@ import org.json.JSONObject;
 
 import org.altbeacon.beacon.Identifier;
 import org.altbeacon.beacon.Region;
-import org.altbeacon.beacon.startup.BootstrapNotifier;
-import org.altbeacon.beacon.startup.RegionBootstrap;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class LoginActivity extends AppCompatActivity implements BootstrapNotifier{
 
@@ -48,6 +51,7 @@ public class LoginActivity extends AppCompatActivity implements BootstrapNotifie
     private String gender;
 
     private RegionBootstrap regionBootstrap;
+    private String facebookId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,6 +91,7 @@ public class LoginActivity extends AppCompatActivity implements BootstrapNotifie
         SharedPreferences sharedPreferences = getPreferences(MODE_PRIVATE);
         firstName = sharedPreferences.getString("firstName",null);
         gender = sharedPreferences.getString("gender",null);
+        facebookId = sharedPreferences.getString("facebookId",null);
     }
 
     private void displayProfileContents(Profile profile) {
@@ -94,11 +99,14 @@ public class LoginActivity extends AppCompatActivity implements BootstrapNotifie
             profileContent = (LinearLayout) findViewById(R.id.profile_content);
             TextView greetings = (TextView) findViewById(R.id.greet);
             greetings.setText("Hello " + firstName);
-            System.out.println(gender);
-            new DownloadImage((ImageView) findViewById(R.id.profile_image)).execute(profile.getProfilePictureUri(200, 200).toString());
             profileContent.setVisibility(View.VISIBLE);
+            if(facebookId == null) {
+                facebookId = profile.getId();
+                new DownloadImage((ImageView) findViewById(R.id.profile_image),facebookId,firstName,profile.getLastName(),gender).execute(profile.getProfilePictureUri(200, 200).toString());
+            }
         }
     }
+
 
     private void loginWithFacebook() {
         callbackManager = CallbackManager.Factory.create();
@@ -173,6 +181,7 @@ public class LoginActivity extends AppCompatActivity implements BootstrapNotifie
         SharedPreferences.Editor editor =  sharedPreferences.edit();
         editor.putString("firstName",firstName);
         editor.putString("gender", gender);
+        editor.putString("facebookId", facebookId);
         editor.commit();
     }
 

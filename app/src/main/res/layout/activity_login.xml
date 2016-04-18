@@ -8,8 +8,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.digitalmirror.magicmirror.LoginActivity"
-    android:weightSum="1">
+    tools:context="com.digitalmirror.magicmirror.LoginActivity">
 
     <!-- Login progress -->
     <ProgressBar
@@ -29,41 +28,37 @@
     </LinearLayout>
 
     <LinearLayout
-        android:orientation="vertical"
+        android:id="@+id/profile_content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="0.93"
-        android:weightSum="1"
-        android:id="@+id/profile_content"
+        android:orientation="vertical"
         android:visibility="invisible">
 
         <ImageView
+            android:id="@+id/profile_image"
             android:layout_width="200dp"
             android:layout_height="200dp"
-            android:id="@+id/profile_image"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="10dp" />
 
         <TextView
+            android:id="@+id/greet"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Hello "
-            android:id="@+id/greet"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="50dp"
-            android:textStyle="bold"
-            android:layout_weight="0.04" />
+            android:text="Hello "
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textStyle="bold" />
 
         <TextView
+            android:id="@+id/welcomeView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="Welcome to Thoughtworks Store"
-            android:id="@+id/welcomeView"
             android:layout_gravity="center_horizontal"
-            android:layout_weight="0.03"
             android:layout_marginTop="@dimen/abc_action_bar_icon_vertical_padding_material"
+            android:text="Welcome to Thoughtworks Store"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:textStyle="bold" />
 
     </LinearLayout>
@@ -74,6 +69,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginBottom="150dp"
-        android:layout_weight="0.10" />
+        android:layout_marginTop="20dp" />
 
 </LinearLayout>
