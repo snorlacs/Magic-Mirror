@@ -2,8 +2,12 @@ package com.digitalmirror.magicmirror;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -11,6 +15,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.digitalmirror.magicmirror.model.User;
+import com.digitalmirror.magicmirror.services.UserService;
 import com.facebook.AccessToken;
 import com.facebook.AccessTokenTracker;
 import com.facebook.CallbackManager;
@@ -22,6 +28,8 @@ import com.facebook.Profile;
 import com.facebook.ProfileTracker;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 
 import net.hockeyapp.android.CrashManager;
 import net.hockeyapp.android.UpdateManager;
@@ -32,6 +40,12 @@ import org.altbeacon.beacon.startup.BootstrapNotifier;
 import org.altbeacon.beacon.startup.RegionBootstrap;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.ByteArrayOutputStream;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class LoginActivity extends AppCompatActivity implements BootstrapNotifier{
 
@@ -45,17 +59,23 @@ public class LoginActivity extends AppCompatActivity implements BootstrapNotifie
     private RegionBootstrap regionBootstrap;
     private String facebookId;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         loadPreferences();
-
         trackAccessToken();
         trackProfile();
         accessTokenTracker.startTracking();
         profileTracker.startTracking();
         loginWithFacebook();
         checkForUpdates();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        loadPreferences();
     }
 
     private void trackProfile() {
@@ -86,16 +106,57 @@ public class LoginActivity extends AppCompatActivity implements BootstrapNotifie
         facebookId = sharedPreferences.getString("facebookId",null);
     }
 
+    private Target target = new Target() {
+        @Override
+        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+            ImageView imageView = (ImageView) findViewById(R.id.profile_image);
+            imageView.setImageBitmap(bitmap);
+            if(facebookId == null) {
+                facebookId = Profile.getCurrentProfile().getId();
+                String lastName = Profile.getCurrentProfile().getLastName();
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                byte[] byteArray = stream.toByteArray();
+                String base64String = Base64.encodeToString(byteArray,Base64.DEFAULT);
+                registerUser(lastName, base64String);
+            }
+        }
+
+        @Override
+        public void onBitmapFailed(Drawable errorDrawable) {
+
+        }
+
+        @Override
+        public void onPrepareLoad(Drawable placeHolderDrawable) {
+
+        }
+
+
+    };
+
+    private void registerUser(String lastName, String base64String) {
+        User user = new User(facebookId,firstName,lastName,gender,base64String);
+        new UserService().registerUser(user, new Callback<User>() {
+            @Override
+            public void onResponse(Call<User> call, Response<User> response) {
+                Log.i("Response", response.toString());
+            }
+
+            @Override
+            public void onFailure(Call<User> call, Throwable t) {
+                Log.i("Failure",t.toString());
+            }
+        });
+    }
+
     private void displayProfileContents(Profile profile) {
         if (profile != null) {
             profileContent = (LinearLayout) findViewById(R.id.profile_content);
             TextView greetings = (TextView) findViewById(R.id.greet);
             greetings.setText("Hello " + firstName);
             profileContent.setVisibility(View.VISIBLE);
-            if(facebookId == null) {
-                facebookId = profile.getId();
-                new DownloadImage((ImageView) findViewById(R.id.profile_image),facebookId,firstName,profile.getLastName(),gender).execute(profile.getProfilePictureUri(200, 200).toString());
-            }
+            Picasso.with(this).load(profile.getProfilePictureUri(200,200)).into(target);
         }
     }
 
@@ -142,7 +203,7 @@ public class LoginActivity extends AppCompatActivity implements BootstrapNotifie
                         try {
                             firstName = response.getJSONObject().getString("first_name");
                             gender = response.getJSONObject().getString("gender");
-                            displayProfileContents(Profile.getCurrentProfile());
+                                displayProfileContents(Profile.getCurrentProfile());
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -195,6 +256,7 @@ public class LoginActivity extends AppCompatActivity implements BootstrapNotifie
 
     protected void onStop() {
         super.onStop();
+        savePreferences();
         accessTokenTracker.stopTracking();
         profileTracker.stopTracking();
 

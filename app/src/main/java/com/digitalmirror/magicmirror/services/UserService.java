@@ -12,7 +12,7 @@ public class UserService {
 
     public void registerUser(User user, Callback<User> callback) {
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("http://52.77.106.73:8080")
+                .baseUrl("http://10.0.3.2:8080")
                 .addConverterFactory(JacksonConverterFactory.create())
                 .build();
 

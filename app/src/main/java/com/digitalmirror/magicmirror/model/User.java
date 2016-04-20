@@ -18,6 +18,9 @@ public class User {
     @JsonProperty
     String displayPicture;
 
+    public User() {
+
+    }
 
     public User(String facebookId, String firstName, String lastName, String gender, String displayPicture) {
         this.facebookId = facebookId;
