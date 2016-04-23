@@ -24,9 +24,19 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
-            shrinkResources false
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    productFlavors {
+        dev {
+            buildConfigField 'String', 'USER_SERVICE_BASE_URL', '"http://10.0.3.2:8080"'
+        }
+
+        qa {
+            buildConfigField 'String', 'USER_SERVICE_BASE_URL', '"http://52.77.106.73:8080"'
         }
     }
 
@@ -44,7 +54,6 @@ dependencies {
     compile 'com.android.support:appcompat-v7:23.2.1'
     compile 'com.android.support:design:23.2.1'
     compile 'com.facebook.android:facebook-android-sdk:[4,5)'
-    compile 'net.hockeyapp.android:HockeySDK:3.7.2'
 
     compile 'org.altbeacon:android-beacon-library:2+'
     compile 'com.squareup.retrofit2:retrofit:2.0.1'

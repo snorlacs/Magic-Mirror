@@ -31,13 +31,6 @@ import com.facebook.login.widget.LoginButton;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
-import net.hockeyapp.android.CrashManager;
-import net.hockeyapp.android.UpdateManager;
-
-import org.altbeacon.beacon.Identifier;
-import org.altbeacon.beacon.Region;
-import org.altbeacon.beacon.startup.BootstrapNotifier;
-import org.altbeacon.beacon.startup.RegionBootstrap;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -47,7 +40,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class LoginActivity extends AppCompatActivity implements BootstrapNotifier{
+public class LoginActivity extends AppCompatActivity {
 
     private CallbackManager callbackManager;
     private AccessTokenTracker accessTokenTracker;
@@ -56,7 +49,6 @@ public class LoginActivity extends AppCompatActivity implements BootstrapNotifie
     private String firstName;
     private String gender;
 
-    private RegionBootstrap regionBootstrap;
     private String facebookId;
 
 
@@ -69,7 +61,27 @@ public class LoginActivity extends AppCompatActivity implements BootstrapNotifie
         accessTokenTracker.startTracking();
         profileTracker.startTracking();
         loginWithFacebook();
-        checkForUpdates();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        savePreferences();
+        accessTokenTracker.stopTracking();
+        profileTracker.stopTracking();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Profile profile = Profile.getCurrentProfile();
+        displayProfileContents(profile);
+    }
+
+    @Override
+    public void onBackPressed() {
+        savePreferences();
+        super.onBackPressed();
     }
 
     @Override
@@ -101,9 +113,34 @@ public class LoginActivity extends AppCompatActivity implements BootstrapNotifie
 
     private void loadPreferences() {
         SharedPreferences sharedPreferences = getPreferences(MODE_PRIVATE);
-        firstName = sharedPreferences.getString("firstName",null);
-        gender = sharedPreferences.getString("gender",null);
-        facebookId = sharedPreferences.getString("facebookId",null);
+        firstName = sharedPreferences.getString("firstName", null);
+        gender = sharedPreferences.getString("gender", null);
+        facebookId = sharedPreferences.getString("facebookId", null);
+    }
+
+    private void registerUser(String lastName, String base64String) {
+        User user = new User(facebookId, firstName, lastName, gender, base64String);
+        new UserService().registerUser(user, new Callback<User>() {
+            @Override
+            public void onResponse(Call<User> call, Response<User> response) {
+                Log.i("Response", response.toString());
+            }
+
+            @Override
+            public void onFailure(Call<User> call, Throwable t) {
+                Log.i("Failure", t.toString());
+            }
+        });
+    }
+
+    private void displayProfileContents(Profile profile) {
+        if (profile != null) {
+            profileContent = (LinearLayout) findViewById(R.id.profile_content);
+            TextView greetings = (TextView) findViewById(R.id.greet);
+            greetings.setText("Hello " + firstName);
+            profileContent.setVisibility(View.VISIBLE);
+            Picasso.with(this).load(profile.getProfilePictureUri(200, 200)).into(target);
+        }
     }
 
     private Target target = new Target() {
@@ -124,42 +161,12 @@ public class LoginActivity extends AppCompatActivity implements BootstrapNotifie
 
         @Override
         public void onBitmapFailed(Drawable errorDrawable) {
-
         }
 
         @Override
         public void onPrepareLoad(Drawable placeHolderDrawable) {
-
         }
-
-
     };
-
-    private void registerUser(String lastName, String base64String) {
-        User user = new User(facebookId,firstName,lastName,gender,base64String);
-        new UserService().registerUser(user, new Callback<User>() {
-            @Override
-            public void onResponse(Call<User> call, Response<User> response) {
-                Log.i("Response", response.toString());
-            }
-
-            @Override
-            public void onFailure(Call<User> call, Throwable t) {
-                Log.i("Failure",t.toString());
-            }
-        });
-    }
-
-    private void displayProfileContents(Profile profile) {
-        if (profile != null) {
-            profileContent = (LinearLayout) findViewById(R.id.profile_content);
-            TextView greetings = (TextView) findViewById(R.id.greet);
-            greetings.setText("Hello " + firstName);
-            profileContent.setVisibility(View.VISIBLE);
-            Picasso.with(this).load(profile.getProfilePictureUri(200,200)).into(target);
-        }
-    }
-
 
     private void loginWithFacebook() {
         callbackManager = CallbackManager.Factory.create();
@@ -192,7 +199,6 @@ public class LoginActivity extends AppCompatActivity implements BootstrapNotifie
         });
     }
 
-
     private void setFacebookData(final LoginResult loginResult) {
         GraphRequest request = GraphRequest.newMeRequest(
                 loginResult.getAccessToken(),
@@ -215,92 +221,19 @@ public class LoginActivity extends AppCompatActivity implements BootstrapNotifie
         request.executeAsync();
     }
 
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         callbackManager.onActivityResult(requestCode, resultCode, data);
     }
 
-
-    @Override
-    public void onBackPressed() {
-        savePreferences();
-        super.onBackPressed();
-    }
-
     private void savePreferences() {
         SharedPreferences sharedPreferences = getPreferences(MODE_PRIVATE);
-        SharedPreferences.Editor editor =  sharedPreferences.edit();
-        editor.putString("firstName",firstName);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("firstName", firstName);
         editor.putString("gender", gender);
         editor.putString("facebookId", facebookId);
         editor.commit();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Profile profile = Profile.getCurrentProfile();
-        displayProfileContents(profile);
-        checkForCrashes();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        Region region = new Region("mirrorRegion", Identifier.parse("b9407f30-f5f8-466e-aff9-25556b57fe6d"), Identifier.parse("21425"), null);
-        regionBootstrap = new RegionBootstrap(this, region);
-        unregisterManagers();
-    }
-
-    protected void onStop() {
-        super.onStop();
-        savePreferences();
-        accessTokenTracker.stopTracking();
-        profileTracker.stopTracking();
-
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        unregisterManagers();
-    }
-
-    private void checkForCrashes() {
-        CrashManager.register(this);
-    }
-
-    private void checkForUpdates() {
-        UpdateManager.register(this);
-    }
-
-    private void unregisterManagers() {
-        UpdateManager.unregister();
-    }
-
-
-    @Override
-    public void didEnterRegion(Region region) {
-        System.out.println("coming..");
-        Intent intent = new Intent(this, LoginActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-        // Important:  make sure to add android:launchMode="singleInstance" in the manifest
-        // to keep multiple copies of this activity from getting created if the user has
-        // already manually launched the app.
-        this.startActivity(intent);
-    }
-
-    @Override
-    public void didExitRegion(Region region) {
-
-    }
-
-    @Override
-    public void didDetermineStateForRegion(int i, Region region) {
-
     }
 }
 

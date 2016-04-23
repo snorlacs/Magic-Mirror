@@ -1,5 +1,6 @@
 package com.digitalmirror.magicmirror.services;
 
+import com.digitalmirror.magicmirror.BuildConfig;
 import com.digitalmirror.magicmirror.gateways.UserServiceGateway;
 import com.digitalmirror.magicmirror.model.User;
 
@@ -12,7 +13,7 @@ public class UserService {
 
     public void registerUser(User user, Callback<User> callback) {
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("http://10.0.3.2:8080")
+                .baseUrl(BuildConfig.USER_SERVICE_BASE_URL)
                 .addConverterFactory(JacksonConverterFactory.create())
                 .build();
 

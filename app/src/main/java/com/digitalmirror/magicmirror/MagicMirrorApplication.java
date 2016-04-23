@@ -23,7 +23,6 @@ public class MagicMirrorApplication extends Application implements BootstrapNoti
 
     private static final String TAG = "MagicMirrorApplication";
     private RegionBootstrap regionBootstrap;
-    private BeaconManager beaconManager;
 
     @Override
     public void onCreate() {
@@ -32,7 +31,7 @@ public class MagicMirrorApplication extends Application implements BootstrapNoti
         FacebookSdk.sdkInitialize(this);
         FacebookSdk.addLoggingBehavior(LoggingBehavior.REQUESTS);
 
-        beaconManager = BeaconManager.getInstanceForApplication(this);
+        BeaconManager beaconManager = BeaconManager.getInstanceForApplication(this);
         beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"));
 
         Region region = new Region("mirrorRegion", null, null, null);
@@ -47,7 +46,6 @@ public class MagicMirrorApplication extends Application implements BootstrapNoti
 
         BeaconLocation beaconLocation = new BeaconLocation("uuId", "majorId", "minorId");
 
-
         new LocationService().postLocation(beaconLocation, new Callback<BeaconLocation>() {
             @Override
             public void onResponse(Call<BeaconLocation> call, Response<BeaconLocation> response) {
@@ -59,7 +57,6 @@ public class MagicMirrorApplication extends Application implements BootstrapNoti
 
             }
         });
-
 
         regionBootstrap.disable();
         Intent intent = new Intent(this, MonitoringActivity.class);

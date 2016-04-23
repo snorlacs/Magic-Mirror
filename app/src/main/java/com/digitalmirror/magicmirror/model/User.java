@@ -29,6 +29,4 @@ public class User {
         this.gender = gender;
         this.displayPicture = displayPicture;
     }
-
-
 }
