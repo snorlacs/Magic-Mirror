@@ -1,5 +1,6 @@
 package com.digitalmirror.magicmirror;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -50,6 +51,7 @@ public class LoginActivity extends AppCompatActivity {
     private String gender;
 
     private String facebookId;
+    private ProgressDialog progress;
 
 
     @Override
@@ -60,6 +62,7 @@ public class LoginActivity extends AppCompatActivity {
         trackProfile();
         accessTokenTracker.startTracking();
         profileTracker.startTracking();
+        progress = new ProgressDialog(this);
         loginWithFacebook();
     }
 
@@ -105,7 +108,10 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             protected void onCurrentAccessTokenChanged(AccessToken oldAccessToken, AccessToken currentAccessToken) {
                 if (currentAccessToken == null) {
+                    progress.setTitle("Loading");
+                    progress.show();
                     profileContent.setVisibility(View.INVISIBLE);
+                    progress.dismiss();
                 }
             }
         };
@@ -140,6 +146,7 @@ public class LoginActivity extends AppCompatActivity {
             greetings.setText("Hello " + firstName);
             profileContent.setVisibility(View.VISIBLE);
             Picasso.with(this).load(profile.getProfilePictureUri(200, 200)).into(target);
+
         }
     }
 
@@ -156,7 +163,9 @@ public class LoginActivity extends AppCompatActivity {
                 byte[] byteArray = stream.toByteArray();
                 String base64String = Base64.encodeToString(byteArray,Base64.DEFAULT);
                 registerUser(lastName, base64String);
+
             }
+            progress.dismiss();
         }
 
         @Override
@@ -177,14 +186,15 @@ public class LoginActivity extends AppCompatActivity {
 
     private void facebookCallback() {
         LoginButton facebookSignInButton = (LoginButton) findViewById(R.id.login_button);
-        facebookSignInButton.setReadPermissions("user_friends");
+        facebookSignInButton.setReadPermissions("public_profile");
 
         facebookSignInButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
+                progress.setTitle("Loading");
+                progress.show();
                 AccessToken accessToken = loginResult.getAccessToken();
                 setFacebookData(loginResult);
-                Toast.makeText(getApplicationContext(), "Logging in...", Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -209,7 +219,7 @@ public class LoginActivity extends AppCompatActivity {
                         try {
                             firstName = response.getJSONObject().getString("first_name");
                             gender = response.getJSONObject().getString("gender");
-                                displayProfileContents(Profile.getCurrentProfile());
+                            displayProfileContents(Profile.getCurrentProfile());
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
