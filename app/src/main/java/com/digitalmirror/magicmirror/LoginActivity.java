@@ -14,7 +14,6 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.digitalmirror.magicmirror.model.User;
 import com.digitalmirror.magicmirror.services.UserService;
@@ -50,7 +49,7 @@ public class LoginActivity extends AppCompatActivity {
     private String firstName;
     private String gender;
 
-    private String facebookId;
+    private String userId;
     private ProgressDialog progress;
 
 
@@ -121,11 +120,11 @@ public class LoginActivity extends AppCompatActivity {
         SharedPreferences sharedPreferences = getPreferences(MODE_PRIVATE);
         firstName = sharedPreferences.getString("firstName", null);
         gender = sharedPreferences.getString("gender", null);
-        facebookId = sharedPreferences.getString("facebookId", null);
+        userId = sharedPreferences.getString("userId", null);
     }
 
     private void registerUser(String lastName, String base64String) {
-        User user = new User(facebookId, firstName, lastName, gender, base64String);
+        User user = new User(userId, firstName, lastName, gender, base64String);
         new UserService().registerUser(user, new Callback<User>() {
             @Override
             public void onResponse(Call<User> call, Response<User> response) {
@@ -155,8 +154,8 @@ public class LoginActivity extends AppCompatActivity {
         public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
             ImageView imageView = (ImageView) findViewById(R.id.profile_image);
             imageView.setImageBitmap(bitmap);
-            if(facebookId == null) {
-                facebookId = Profile.getCurrentProfile().getId();
+            if(userId == null) {
+                userId = Profile.getCurrentProfile().getId();
                 String lastName = Profile.getCurrentProfile().getLastName();
                 ByteArrayOutputStream stream = new ByteArrayOutputStream();
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
@@ -242,7 +241,7 @@ public class LoginActivity extends AppCompatActivity {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("firstName", firstName);
         editor.putString("gender", gender);
-        editor.putString("facebookId", facebookId);
+        editor.putString("userId", userId);
         editor.commit();
     }
 }

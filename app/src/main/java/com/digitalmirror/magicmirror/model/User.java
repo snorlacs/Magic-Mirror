@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class User {
     @JsonProperty
-    String facebookId;
+    String userId;
 
     @JsonProperty
     String firstName;
@@ -22,8 +22,8 @@ public class User {
 
     }
 
-    public User(String facebookId, String firstName, String lastName, String gender, String displayPicture) {
-        this.facebookId = facebookId;
+    public User(String userId, String firstName, String lastName, String gender, String displayPicture) {
+        this.userId = userId;
         this.firstName = firstName;
         this.lastName = lastName;
         this.gender = gender;
