@@ -2,7 +2,7 @@ package com.digitalmirror.magicmirror.services;
 
 import com.digitalmirror.magicmirror.BuildConfig;
 import com.digitalmirror.magicmirror.gateways.UserServiceGateway;
-import com.digitalmirror.magicmirror.model.User;
+import com.digitalmirror.magicmirror.models.User;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -22,5 +22,4 @@ public class UserService {
         Call<User> call = userServiceGateway.regiserUser(user);
         call.enqueue(callback);
     }
-
 }

@@ -2,7 +2,6 @@ package com.digitalmirror.magicmirror;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
@@ -15,8 +14,9 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.digitalmirror.magicmirror.model.User;
+import com.digitalmirror.magicmirror.models.User;
 import com.digitalmirror.magicmirror.services.UserService;
+import com.digitalmirror.magicmirror.utils.Preferences;
 import com.facebook.AccessToken;
 import com.facebook.AccessTokenTracker;
 import com.facebook.CallbackManager;
@@ -40,6 +40,10 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import static com.digitalmirror.magicmirror.utils.Preferences.Keys.FIRST_NAME;
+import static com.digitalmirror.magicmirror.utils.Preferences.Keys.GENDER;
+import static com.digitalmirror.magicmirror.utils.Preferences.Keys.USER_ID;
+
 public class LoginActivity extends AppCompatActivity {
 
     private CallbackManager callbackManager;
@@ -51,11 +55,14 @@ public class LoginActivity extends AppCompatActivity {
 
     private String userId;
     private ProgressDialog progress;
+    private Preferences preferences;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        preferences = new Preferences(getApplicationContext());
+
         loadPreferences();
         trackAccessToken();
         trackProfile();
@@ -117,10 +124,9 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void loadPreferences() {
-        SharedPreferences sharedPreferences = getPreferences(MODE_PRIVATE);
-        firstName = sharedPreferences.getString("firstName", null);
-        gender = sharedPreferences.getString("gender", null);
-        userId = sharedPreferences.getString("userId", null);
+        firstName = preferences.get(FIRST_NAME);
+        gender = preferences.get(GENDER);
+        userId = preferences.get(USER_ID);
     }
 
     private void registerUser(String lastName, String base64String) {
@@ -237,12 +243,9 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void savePreferences() {
-        SharedPreferences sharedPreferences = getPreferences(MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("firstName", firstName);
-        editor.putString("gender", gender);
-        editor.putString("userId", userId);
-        editor.commit();
+        preferences.store(FIRST_NAME, firstName);
+        preferences.store(Preferences.Keys.GENDER, gender);
+        preferences.store(Preferences.Keys.USER_ID, userId);
     }
 }
 

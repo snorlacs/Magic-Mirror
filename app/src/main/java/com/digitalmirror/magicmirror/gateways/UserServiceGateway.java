@@ -1,6 +1,6 @@
 package com.digitalmirror.magicmirror.gateways;
 
-import com.digitalmirror.magicmirror.model.User;
+import com.digitalmirror.magicmirror.models.User;
 
 import retrofit2.Call;
 import retrofit2.http.Body;

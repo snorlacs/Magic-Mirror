@@ -34,7 +34,10 @@
             android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
             android:label="@string/app_name"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
-        <activity android:name="com.digitalmirror.magicmirror.MonitoringActivity" />
+
+        <service
+            android:name=".services.beacon.BeaconScannerService"
+            android:exported="false" />
 
     </application>
 

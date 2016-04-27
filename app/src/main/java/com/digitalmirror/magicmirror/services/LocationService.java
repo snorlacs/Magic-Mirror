@@ -1,26 +1,39 @@
 package com.digitalmirror.magicmirror.services;
 
+import android.util.Log;
+
+import com.digitalmirror.magicmirror.BuildConfig;
 import com.digitalmirror.magicmirror.gateways.LocationServiceGateway;
-import com.digitalmirror.magicmirror.model.BeaconLocation;
+import com.digitalmirror.magicmirror.models.UserBeaconLocation;
 
 import retrofit2.Call;
 import retrofit2.Callback;
+import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 
 public class LocationService {
 
-    public void postLocation(BeaconLocation beaconLocation, Callback<BeaconLocation> callback) {
+    private static final String TAG = LocationService.class.getSimpleName();
+
+    public void postLocation(UserBeaconLocation userUserBeaconLocation) {
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://api.mlab.com/")
+                .baseUrl(BuildConfig.LOCATION_SERVICE_BASE_URL)
                 .addConverterFactory(JacksonConverterFactory.create())
                 .build();
 
-
-//        https://api.mlab.com/api/1/databases/mirrortest/collections/location?apiKey=tOzF18DiN6loXnndQzNIPiCNncJxS83P
-
         LocationServiceGateway serviceGateway = retrofit.create(LocationServiceGateway.class);
-        Call<BeaconLocation> call = serviceGateway.postLocation(beaconLocation, "tOzF18DiN6loXnndQzNIPiCNncJxS83P");
-        call.enqueue(callback);
+        Call<UserBeaconLocation> call = serviceGateway.postLocation(userUserBeaconLocation);
+        call.enqueue(new Callback<UserBeaconLocation>() {
+            @Override
+            public void onResponse(Call<UserBeaconLocation> call, Response<UserBeaconLocation> response) {
+                Log.i(TAG, "Got response from location service. Status Code: " + response.code());
+            }
+
+            @Override
+            public void onFailure(Call<UserBeaconLocation> call, Throwable t) {
+                Log.e(TAG, "Error while sending user location to location service", t);
+            }
+        });
     }
 }

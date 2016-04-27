@@ -1,4 +1,4 @@
-package com.digitalmirror.magicmirror.model;
+package com.digitalmirror.magicmirror.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
