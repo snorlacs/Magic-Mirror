@@ -27,7 +27,6 @@ public class BeaconScannerService extends Service
     private static final String TAG = BeaconScannerService.class.getSimpleName();
     private BeaconManager beaconManager;
     private BeaconHandler beaconHandler;
-
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {

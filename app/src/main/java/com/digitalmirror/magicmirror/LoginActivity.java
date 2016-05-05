@@ -1,11 +1,19 @@
 package com.digitalmirror.magicmirror;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Base64;
 import android.util.Log;
@@ -16,6 +24,7 @@ import android.widget.TextView;
 
 import com.digitalmirror.magicmirror.models.User;
 import com.digitalmirror.magicmirror.services.UserService;
+import com.digitalmirror.magicmirror.utils.LocationUtil;
 import com.digitalmirror.magicmirror.utils.Preferences;
 import com.facebook.AccessToken;
 import com.facebook.AccessTokenTracker;
@@ -46,6 +55,8 @@ import static com.digitalmirror.magicmirror.utils.Preferences.Keys.USER_ID;
 
 public class LoginActivity extends AppCompatActivity {
 
+    private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
+    private static final String TAG = "LoginActivity";
     private CallbackManager callbackManager;
     private AccessTokenTracker accessTokenTracker;
     private ProfileTracker profileTracker;
@@ -61,6 +72,10 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        runtimePermissionsForLocationServices();
+        enableLocationServicesForAndroidM();
+
         preferences = new Preferences(getApplicationContext());
 
         loadPreferences();
@@ -70,7 +85,35 @@ public class LoginActivity extends AppCompatActivity {
         profileTracker.startTracking();
         progress = new ProgressDialog(this);
         loginWithFacebook();
+
     }
+
+    private void runtimePermissionsForLocationServices() {
+        if(ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION)!= PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSION_REQUEST_COARSE_LOCATION);
+        }
+    }
+
+    private void enableLocationServicesForAndroidM() {
+        if(Build.VERSION.SDK_INT == Build.VERSION_CODES.M) {
+            if(new LocationUtil().isLocationEnabled(getApplicationContext())) {
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("Location Services Not Active");
+                builder.setMessage("Please enable Location Services and GPS");
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                        startActivity(intent);
+                    }
+                });
+                Dialog alertDialog = builder.create();
+                alertDialog.setCanceledOnTouchOutside(false);
+                alertDialog.show();
+            }
+        }
+    }
+
 
     @Override
     protected void onStop() {
@@ -114,9 +157,9 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             protected void onCurrentAccessTokenChanged(AccessToken oldAccessToken, AccessToken currentAccessToken) {
                 if (currentAccessToken == null) {
+                    profileContent.setVisibility(View.INVISIBLE);
                     progress.setTitle("Loading");
                     progress.show();
-                    profileContent.setVisibility(View.INVISIBLE);
                     progress.dismiss();
                 }
             }
@@ -134,7 +177,9 @@ public class LoginActivity extends AppCompatActivity {
         new UserService().registerUser(user, new Callback<User>() {
             @Override
             public void onResponse(Call<User> call, Response<User> response) {
+                savePreferences();
                 Log.i("Response", response.toString());
+
             }
 
             @Override
@@ -168,7 +213,6 @@ public class LoginActivity extends AppCompatActivity {
                 byte[] byteArray = stream.toByteArray();
                 String base64String = Base64.encodeToString(byteArray,Base64.DEFAULT);
                 registerUser(lastName, base64String);
-
             }
             progress.dismiss();
         }
@@ -184,7 +228,6 @@ public class LoginActivity extends AppCompatActivity {
 
     private void loginWithFacebook() {
         callbackManager = CallbackManager.Factory.create();
-
         setContentView(R.layout.activity_login);
         facebookCallback();
     }

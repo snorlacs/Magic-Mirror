@@ -2,9 +2,12 @@ package com.digitalmirror.magicmirror;
 
 import android.app.Application;
 import android.content.Intent;
+import android.provider.Settings;
 import android.util.Log;
 
 import com.digitalmirror.magicmirror.services.beacon.BeaconScannerService;
+import com.digitalmirror.magicmirror.utils.BluetoothUtil;
+import com.digitalmirror.magicmirror.utils.LocationUtil;
 import com.facebook.FacebookSdk;
 import com.facebook.LoggingBehavior;
 
@@ -20,6 +23,10 @@ public class MagicMirrorApplication extends Application {
         FacebookSdk.sdkInitialize(this);
         FacebookSdk.addLoggingBehavior(LoggingBehavior.REQUESTS);
 
-        startService(new Intent(this, BeaconScannerService.class));
+        if (new BluetoothUtil().enableBluetooth()) {
+            startService(new Intent(this, BeaconScannerService.class));
+        }
     }
+
+
 }

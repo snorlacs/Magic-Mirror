@@ -49,9 +49,13 @@ public class BeaconHandler {
                 " and major id: " + majorId +
                 " and minor id: " + minorId +
                 " approximately " + nearestBeacon.getDistance() + " meters away.");
-
-        UserBeaconLocation location = new UserBeaconLocation(preferences.get(USER_ID), uuId, majorId, minorId);
-        locationService.postLocation(location);
+        if(preferences.get(USER_ID)!=null) {
+            UserBeaconLocation userBeaconlocation = new UserBeaconLocation(preferences.get(USER_ID), uuId, majorId, minorId);
+            locationService.postLocation(userBeaconlocation);
+        }
+        else {
+            Log.d(TAG,"Beacon registration waiting for user registration");
+        }
     }
 
     public String getLayout() {
