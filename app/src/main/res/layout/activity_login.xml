@@ -27,7 +27,7 @@
 
     </LinearLayout>
 
-    <LinearLayout
+    <RelativeLayout
         android:id="@+id/profile_content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -39,6 +39,7 @@
             android:layout_width="200dp"
             android:layout_height="200dp"
             android:layout_gravity="center_horizontal"
+            android:layout_centerHorizontal="true"
             android:layout_marginTop="10dp"
             android:scaleType="fitXY"/>
 
@@ -47,9 +48,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="50dp"
+            android:layout_marginTop="240dp"
             android:text="Hello "
             android:textAppearance="?android:attr/textAppearanceLarge"
+            android:layout_centerHorizontal="true"
             android:textStyle="bold" />
 
         <TextView
@@ -57,12 +59,35 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="@dimen/abc_action_bar_icon_vertical_padding_material"
+            android:layout_marginTop="280dp"
             android:text="Welcome to Thoughtworks Store"
+            android:layout_centerHorizontal="true"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:textStyle="bold" />
 
-    </LinearLayout>
+        <RelativeLayout
+            android:id="@+id/welcome_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="invisible"
+            android:layout_centerVertical="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true">
+
+            <TextView
+                android:id="@+id/welcome_greet"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="20dp"
+                android:text=""
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textStyle="bold" />
+
+        </RelativeLayout>
+
+    </RelativeLayout>
 
     <com.facebook.login.widget.LoginButton
         android:id="@+id/login_button"

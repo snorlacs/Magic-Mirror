@@ -43,8 +43,8 @@ android {
 
     productFlavors {
         dev {
-            buildConfigField 'String', 'USER_SERVICE_BASE_URL', '"http://10.0.3.2:8080"'
-            buildConfigField 'String', 'LOCATION_SERVICE_BASE_URL', '"http://10.0.3.2:8080"'
+            buildConfigField 'String', 'USER_SERVICE_BASE_URL', '"http://10.4.21.192:8080"'
+            buildConfigField 'String', 'LOCATION_SERVICE_BASE_URL', '"http://10.4.21.192:8080"'
         }
 
         qa {

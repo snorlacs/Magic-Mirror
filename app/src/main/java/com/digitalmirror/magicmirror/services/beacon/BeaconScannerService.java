@@ -3,6 +3,7 @@ package com.digitalmirror.magicmirror.services.beacon;
 import android.app.Service;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -18,6 +19,7 @@ import org.altbeacon.beacon.MonitorNotifier;
 import org.altbeacon.beacon.RangeNotifier;
 import org.altbeacon.beacon.Region;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 
@@ -27,10 +29,12 @@ public class BeaconScannerService extends Service
     private static final String TAG = BeaconScannerService.class.getSimpleName();
     private BeaconManager beaconManager;
     private BeaconHandler beaconHandler;
-    @Nullable
+    private final IBinder mBinder = new LocalBinder();
+    Collection<Beacon> beacons;
+
     @Override
     public IBinder onBind(Intent intent) {
-        return null;
+        return mBinder;
     }
 
     @Override
@@ -112,6 +116,27 @@ public class BeaconScannerService extends Service
     @Override
     public void didRangeBeaconsInRegion(Collection<Beacon> beacons, Region region) {
         Log.d(TAG, "Got beacons in range, size: " + beacons.size());
+        this.beacons = beacons;
         beaconHandler.handleBeaconsInRange(beacons);
+
     }
+
+    public Beacon getNearestBeacon() {
+        if (beaconHandler == null) {
+            beaconHandler = new BeaconHandler(this);
+        }
+        if(beacons!=null) {
+            ArrayList<Beacon> sortedBeacons = beaconHandler.sortByDistance(beacons);
+            return sortedBeacons.get(0);
+        }
+        return null;
+    }
+
+    public class LocalBinder extends Binder {
+        public BeaconScannerService getService() {
+            return BeaconScannerService.this;
+        }
+    }
+
+
 }

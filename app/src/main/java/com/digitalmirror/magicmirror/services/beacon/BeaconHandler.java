@@ -40,7 +40,6 @@ public class BeaconHandler {
 
         ArrayList<Beacon> sortedBeacons = sortByDistance(foundBeacons);
         Beacon nearestBeacon = sortedBeacons.get(0);
-
         String uuId = nearestBeacon.getId1().toString();
         long majorId = Long.parseLong(String.valueOf(nearestBeacon.getId2()));
         long minorId = Long.parseLong(String.valueOf(nearestBeacon.getId3()));
@@ -49,13 +48,13 @@ public class BeaconHandler {
                 " and major id: " + majorId +
                 " and minor id: " + minorId +
                 " approximately " + nearestBeacon.getDistance() + " meters away.");
-        if(preferences.get(USER_ID)!=null) {
+        if (preferences.get(USER_ID) != null) {
             UserBeaconLocation userBeaconlocation = new UserBeaconLocation(preferences.get(USER_ID), uuId, majorId, minorId);
             locationService.postLocation(userBeaconlocation);
+        } else {
+            Log.d(TAG, "Beacon registration waiting for user registration");
         }
-        else {
-            Log.d(TAG,"Beacon registration waiting for user registration");
-        }
+
     }
 
     public String getLayout() {
@@ -63,7 +62,7 @@ public class BeaconHandler {
     }
 
     @NonNull
-    private ArrayList<Beacon> sortByDistance(Collection<Beacon> foundBeacons) {
+    public ArrayList<Beacon> sortByDistance(Collection<Beacon> foundBeacons) {
         ArrayList<Beacon> beacons = new ArrayList<>(foundBeacons);
         Collections.sort(beacons, new Comparator<Beacon>() {
             @Override
@@ -71,6 +70,7 @@ public class BeaconHandler {
                 return (int) (lhs.getDistance() - rhs.getDistance());
             }
         });
+
         return beacons;
     }
 }

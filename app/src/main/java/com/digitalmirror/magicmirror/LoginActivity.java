@@ -1,8 +1,10 @@
 package com.digitalmirror.magicmirror;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.bluetooth.BluetoothAdapter;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -15,14 +17,14 @@ import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.digitalmirror.magicmirror.models.User;
+import com.digitalmirror.magicmirror.services.LocationService;
 import com.digitalmirror.magicmirror.services.UserService;
 import com.digitalmirror.magicmirror.utils.LocationUtil;
 import com.digitalmirror.magicmirror.utils.Preferences;
@@ -60,7 +62,7 @@ public class LoginActivity extends AppCompatActivity {
     private CallbackManager callbackManager;
     private AccessTokenTracker accessTokenTracker;
     private ProfileTracker profileTracker;
-    private LinearLayout profileContent;
+    private RelativeLayout profileContent;
     private String firstName;
     private String gender;
 
@@ -68,16 +70,14 @@ public class LoginActivity extends AppCompatActivity {
     private ProgressDialog progress;
     private Preferences preferences;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         runtimePermissionsForLocationServices();
+        enableBluetooth();
         enableLocationServicesForAndroidM();
 
         preferences = new Preferences(getApplicationContext());
-
         loadPreferences();
         trackAccessToken();
         trackProfile();
@@ -88,9 +88,17 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
+    private void enableBluetooth() {
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if(!bluetoothAdapter.isEnabled()) {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivity(enableBtIntent);;
+        }
+    }
+
     private void runtimePermissionsForLocationServices() {
         if(ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION)!= PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSION_REQUEST_COARSE_LOCATION);
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.BLUETOOTH}, PERMISSION_REQUEST_COARSE_LOCATION);
         }
     }
 
@@ -119,8 +127,8 @@ public class LoginActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         savePreferences();
-        accessTokenTracker.stopTracking();
-        profileTracker.stopTracking();
+//        accessTokenTracker.stopTracking();
+//        profileTracker.stopTracking();
     }
 
     @Override
@@ -156,14 +164,38 @@ public class LoginActivity extends AppCompatActivity {
         accessTokenTracker = new AccessTokenTracker() {
             @Override
             protected void onCurrentAccessTokenChanged(AccessToken oldAccessToken, AccessToken currentAccessToken) {
+
                 if (currentAccessToken == null) {
-                    profileContent.setVisibility(View.INVISIBLE);
-                    progress.setTitle("Loading");
-                    progress.show();
-                    progress.dismiss();
+                    RelativeLayout profileLayout = (RelativeLayout) findViewById(R.id.profile_content);
+                    profileLayout.setVisibility(View.INVISIBLE);
+                    clearUserBeaconRelation();
+                    clearPreferences();
                 }
             }
         };
+    }
+
+    private void clearUserBeaconRelation() {
+
+        new LocationService().logoutUser(userId, new Callback<Void>() {
+
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                Log.i("Delete:", "success");
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                Log.i("Failure", t.toString());
+            }
+        });
+    }
+
+    private void clearPreferences() {
+       firstName = null;
+       gender = null;
+       userId = null;
+       savePreferences();
     }
 
     private void loadPreferences() {
@@ -173,6 +205,12 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void registerUser(String lastName, String base64String) {
+        if(firstName == null)
+        {
+            Profile profile = Profile.getCurrentProfile();
+            firstName = profile.getFirstName();
+        }
+
         User user = new User(userId, firstName, lastName, gender, base64String);
         new UserService().registerUser(user, new Callback<User>() {
             @Override
@@ -185,15 +223,17 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<User> call, Throwable t) {
                 Log.i("Failure", t.toString());
-            }
+        }
         });
     }
 
     private void displayProfileContents(Profile profile) {
         if (profile != null) {
-            profileContent = (LinearLayout) findViewById(R.id.profile_content);
+            profileContent = (RelativeLayout) findViewById(R.id.profile_content);
+            RelativeLayout welcomeContent = (RelativeLayout) findViewById(R.id.welcome_content);
             TextView greetings = (TextView) findViewById(R.id.greet);
             greetings.setText("Hello " + firstName);
+            welcomeContent.setVisibility(View.INVISIBLE);
             profileContent.setVisibility(View.VISIBLE);
             Picasso.with(this).load(profile.getProfilePictureUri(200, 200)).into(target);
 
@@ -211,7 +251,7 @@ public class LoginActivity extends AppCompatActivity {
                 ByteArrayOutputStream stream = new ByteArrayOutputStream();
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
                 byte[] byteArray = stream.toByteArray();
-                String base64String = Base64.encodeToString(byteArray,Base64.DEFAULT);
+                String base64String = Profile.getCurrentProfile().getProfilePictureUri(400,400).toString();
                 registerUser(lastName, base64String);
             }
             progress.dismiss();
@@ -243,6 +283,7 @@ public class LoginActivity extends AppCompatActivity {
                 progress.show();
                 AccessToken accessToken = loginResult.getAccessToken();
                 setFacebookData(loginResult);
+                enableBluetooth();
             }
 
             @Override

@@ -4,6 +4,8 @@ import android.util.Log;
 
 import com.digitalmirror.magicmirror.BuildConfig;
 import com.digitalmirror.magicmirror.gateways.LocationServiceGateway;
+import com.digitalmirror.magicmirror.gateways.UserServiceGateway;
+import com.digitalmirror.magicmirror.models.User;
 import com.digitalmirror.magicmirror.models.UserBeaconLocation;
 
 import retrofit2.Call;
@@ -35,5 +37,15 @@ public class LocationService {
                 Log.e(TAG, "Error while sending user location to location service", t);
             }
         });
+    }
+
+    public void logoutUser(String userId, Callback<Void> callback) {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(BuildConfig.LOCATION_SERVICE_BASE_URL)
+                .addConverterFactory(JacksonConverterFactory.create())
+                .build();
+        LocationServiceGateway locationServiceGateway = retrofit.create(LocationServiceGateway.class);
+        Call<Void> call = locationServiceGateway.logoutUser(userId);
+        call.enqueue(callback);
     }
 }

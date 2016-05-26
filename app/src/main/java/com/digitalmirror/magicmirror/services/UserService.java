@@ -22,4 +22,6 @@ public class UserService {
         Call<User> call = userServiceGateway.regiserUser(user);
         call.enqueue(callback);
     }
+
+
 }
